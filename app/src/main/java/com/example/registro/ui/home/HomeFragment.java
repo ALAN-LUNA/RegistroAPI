@@ -15,6 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.registro.databinding.FragmentHomeBinding;
 
+import java.util.Date;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
@@ -27,7 +29,6 @@ import retrofit2.http.POST;
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
-    private RegisterApi registerApi;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -48,40 +49,51 @@ public class HomeFragment extends Fragment {
             final EditText EtEmail = binding.emailEt;
             final EditText EtPass = binding.passEt;
             final EditText EtValidate = binding.validateEt;
+            final EditText Fecha = binding.editTextDate4;
             final HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             @Override
             public void onClick(View view) {
+                String name = EtName.getText().toString().trim();
+                String apPat = EtApPat.getText().toString().trim();
+                String apMat = EtApMat.getText().toString().trim();
+                String email = EtEmail.getText().toString().trim();
+                String password = EtPass.getText().toString().trim();
+                String validate = EtValidate.getText().toString().trim();
+                String fecha_nacimiento = Fecha.getText().toString().trim();
+
+                if(email.isEmpty() || password.isEmpty() || validate.isEmpty()){
+                    Toast.makeText(getContext(), "Faltan datos para poder registrarte", Toast.LENGTH_SHORT).show();
+                }
+
                 logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+
                 final OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
                 httpClient.addInterceptor(logging);
                 Retrofit retrofit=new Retrofit.Builder()
-                        .baseUrl("https://eyiogthd.lucusvirtual.es")
+                        .baseUrl("https://eyiogthd.lucusvirtual.es/api/")
                         .addConverterFactory(GsonConverterFactory.create())
                         .client(httpClient.build())
                         .build();
-
-                registerApi = retrofit.create(RegisterApi.class);
-
-                Register post = new Register("EtName","EtApPat","EtApMat","EtEmail","EtPass","EtValidate","2001-08-21");
-
-                Call<Register> call = registerApi.createpost(post);
-
+                RegisterApi register = retrofit.create(RegisterApi.class);
+                Call<Register> call = register.REGISTER_CALL(name, apPat, apMat, email, password, validate, fecha_nacimiento);
                 call.enqueue(new Callback<Register>() {
                     @Override
                     public void onResponse(Call<Register> call, Response<Register> response) {
-                        try {
-                            if(response.isSuccessful()){
-                                Toast.makeText(getContext(), "Registrado correctamente", Toast.LENGTH_SHORT).show();
-                            }
-
-                        }catch (Exception ex){
-                            Toast.makeText(getContext(), "no"+ ex.getMessage(), Toast.LENGTH_SHORT).show();
+                        if(response.isSuccessful() && response.body() != null){
+                            EtName.getText().clear();
+                            EtApPat.getText().clear();
+                            EtApMat.getText().clear();
+                            EtEmail.getText().clear();
+                            EtPass.getText().clear();
+                            EtValidate.getText().clear();
+                            Fecha.getText().clear();
+                            Toast.makeText(getContext(), "Registrado Correctamente", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<Register> call, Throwable t) {
-
+                        Toast.makeText(getContext(), "Error al registrar", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

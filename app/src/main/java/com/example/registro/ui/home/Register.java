@@ -65,7 +65,7 @@ public class Register {
         this.fecha_nacimiento = fecha_nacimiento;
     }
 
-    public Register(String name, String apPat, String apMat, String email, String password, String validate, String fecha_nacimiento) {
+    public Register(String name, String apPat, String apMat, String email, String password, String validate, String  fecha_nacimiento) {
         this.name = name;
         this.apPat = apPat;
         this.apMat = apMat;
